@@ -255,7 +255,7 @@ final class SchemaValidator implements Validator
                 $allMismatches[] = $this->deepExtractErrors($error);
             }
             throw new SchemaMismatch(
-                childMismatches: $this->uniquePathMistmatches(array_merge(...$allMismatches)),
+                childMismatches: $this->uniquePathMistmatches(array_merge(...$allMismatches), $breadCrumb),
                 dataBreadCrumb: $breadCrumb,
                 data: $data,
             );
@@ -279,17 +279,16 @@ final class SchemaValidator implements Validator
      * @param  SchemaMismatch[]  $mismatches
      * @return SchemaMismatch[]
      */
-    public function uniquePathMistmatches(array $mismatches): array
+    public function uniquePathMistmatches(array $mismatches, BreadCrumb $breadCrumb): array
     {
         $unique = [];
         foreach ($mismatches as $mismatch) {
             if (!$mismatch->getMessage()) {
                 continue;
             }
-//            $path = $mismatch->dataBreadCrumb()?->getFullPath();
-//            if (!$path) {
-//                continue;
-//            }
+            if ($mismatch->dataBreadCrumb() === null) {
+                $mismatch->hydrateDataBreadCrumb($breadCrumb);
+            }
             $unique[] = $mismatch;
         }
 
