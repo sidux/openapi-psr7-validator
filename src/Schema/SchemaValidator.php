@@ -65,7 +65,7 @@ final class SchemaValidator implements Validator
         // We don't want to validate any more if the value is a valid Null
         if ($data === null) {
             if (count($errors) > 0) {
-                throw new SchemaMismatch(childMismatches: $errors);
+                $this->handleMismatches($errors, $breadCrumb, $data);
             }
             return;
         }
@@ -250,15 +250,7 @@ final class SchemaValidator implements Validator
         //   ✓  ok, all checks are done
 
         if (count($errors) > 0) {
-            $allMismatches = [];
-            foreach ($errors as $error) {
-                $allMismatches[] = $this->deepExtractErrors($error);
-            }
-            throw new SchemaMismatch(
-                childMismatches: $this->uniquePathMistmatches(array_merge(...$allMismatches), $breadCrumb),
-                dataBreadCrumb: $breadCrumb,
-                data: $data,
-            );
+            $this->handleMismatches($errors, $breadCrumb, $data);
         }
     }
 
@@ -293,6 +285,21 @@ final class SchemaValidator implements Validator
         }
 
         return $unique;
+    }
 
+    /**
+     * @throws SchemaMismatch
+     */
+    public function handleMismatches(array $errors, BreadCrumb $breadCrumb, mixed $data): void
+    {
+        $allMismatches = [];
+        foreach ($errors as $error) {
+            $allMismatches[] = $this->deepExtractErrors($error);
+        }
+        throw new SchemaMismatch(
+            childMismatches: $this->uniquePathMistmatches(array_merge(...$allMismatches), $breadCrumb),
+            dataBreadCrumb: $breadCrumb,
+            data: $data,
+        );
     }
 }
