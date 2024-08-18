@@ -35,10 +35,7 @@ SPEC;
         $schema = $this->loadRawSchema($spec);
         $data   = ['a' => 1, 'b' => 2, 'c' => 3];
 
-        try {
-            (new SchemaValidator())->validate($data, $schema);
-        } catch (KeywordMismatch $e) {
-            $this->assertEquals('maxProperties', $e->keyword());
-        }
+        $e = $this->expectMismatch(KeywordMismatch::class, fn () => (new SchemaValidator())->validate($data, $schema));
+        $this->assertEquals('maxProperties', $e->keyword());
     }
 }

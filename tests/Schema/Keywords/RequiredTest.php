@@ -63,12 +63,8 @@ SPEC;
         $schema = $this->loadRawSchema($spec);
         $data   = ['a' => 1];
 
-        try {
-            (new SchemaValidator())->validate($data, $schema);
-            $this->fail('Validation did not expected to pass');
-        } catch (KeywordMismatch $e) {
-            $this->assertEquals('required', $e->keyword());
-        }
+        $e = $this->expectMismatch(KeywordMismatch::class, fn () => (new SchemaValidator())->validate($data, $schema));
+        $this->assertEquals('required', $e->keyword());
     }
 
     public function testItValidatesPropertiesRed(): void
@@ -89,11 +85,7 @@ SPEC;
         $schema = $this->loadRawSchema($spec);
         $data   = ['name' => 'Dima'];
 
-        try {
-            (new SchemaValidator())->validate($data, $schema);
-            $this->fail('Validation did not expected to pass');
-        } catch (KeywordMismatch $e) {
-            $this->assertEquals('required', $e->keyword());
-        }
+        $e = $this->expectMismatch(KeywordMismatch::class, fn () => (new SchemaValidator())->validate($data, $schema));
+        $this->assertEquals('required', $e->keyword());
     }
 }

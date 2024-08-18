@@ -58,11 +58,7 @@ SPEC;
         $schema = $this->loadRawSchema($spec);
         $data   = ['time' => 'today'];
 
-        try {
-            (new SchemaValidator())->validate($data, $schema);
-            $this->fail('Validation did not expected to pass');
-        } catch (KeywordMismatch $e) {
-            $this->assertEquals('anyOf', $e->keyword());
-        }
+        $e = $this->expectMismatch(KeywordMismatch::class, fn () => (new SchemaValidator())->validate($data, $schema));
+        $this->assertEquals('anyOf', $e->keyword());
     }
 }

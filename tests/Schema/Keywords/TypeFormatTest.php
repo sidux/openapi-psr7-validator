@@ -34,12 +34,8 @@ SPEC;
 
         $schema = $this->loadRawSchema($spec);
 
-        try {
-            (new SchemaValidator())->validate('invalid email', $schema);
-            $this->fail('Validation did not expected to pass');
-        } catch (FormatMismatch $e) {
-            $this->assertEquals('email', $e->format());
-        }
+        $e = $this->expectMismatch(FormatMismatch::class, fn () => (new SchemaValidator())->validate('invalid email', $schema));
+        $this->assertEquals('email', $e->format());
     }
 
     public function testItUnexpectedFormatIgnoredGreen(): void
@@ -93,12 +89,9 @@ SPEC;
         };
         FormatsContainer::registerFormat('string', 'unexpected', $customFormat);
 
-        try {
-            $schema = $this->loadRawSchema($spec);
-            (new SchemaValidator())->validate('bad value', $schema);
-            $this->fail('Validation did not expected to pass');
-        } catch (FormatMismatch $e) {
-            $this->assertEquals('unexpected', $e->format());
-        }
+        $schema = $this->loadRawSchema($spec);
+
+        $e = $this->expectMismatch(FormatMismatch::class, fn () => (new SchemaValidator())->validate('bad value', $schema));
+        $this->assertEquals('unexpected', $e->format());
     }
 }

@@ -65,8 +65,7 @@ SPEC;
 
         $schema = $this->loadRawSchema($spec);
 
-        $this->expectException(TypeMismatch::class);
-        (new SchemaValidator())->validate($invalidValue, $schema);
+        $this->expectMismatch(TypeMismatch::class, fn () => (new SchemaValidator())->validate($invalidValue, $schema));
     }
 
     /**

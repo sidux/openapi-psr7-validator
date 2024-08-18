@@ -40,11 +40,7 @@ SPEC;
         $schema = $this->loadRawSchema($spec);
         $data   = 'c';
 
-        try {
-            (new SchemaValidator())->validate($data, $schema);
-            $this->fail('Validation did not expected to pass');
-        } catch (KeywordMismatch $e) {
-            $this->assertEquals('enum', $e->keyword());
-        }
+        $e = $this->expectMismatch(KeywordMismatch::class, fn () => (new SchemaValidator())->validate($data, $schema));
+        $this->assertEquals('enum', $e->keyword());
     }
 }

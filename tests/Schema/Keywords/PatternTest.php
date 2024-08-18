@@ -54,11 +54,7 @@ SPEC;
         $schema = $this->loadRawSchema($spec);
         $data   = 'abc';
 
-        try {
-            (new SchemaValidator())->validate($data, $schema);
-            $this->fail('Validation did not expected to pass');
-        } catch (KeywordMismatch $e) {
-            $this->assertEquals('pattern', $e->keyword());
-        }
+        $e = $this->expectMismatch(KeywordMismatch::class, fn () => (new SchemaValidator())->validate($data, $schema));
+        $this->assertEquals('pattern', $e->keyword());
     }
 }

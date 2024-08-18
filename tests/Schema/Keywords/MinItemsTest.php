@@ -40,11 +40,7 @@ SPEC;
         $schema = $this->loadRawSchema($spec);
         $data   = [1, 2];
 
-        try {
-            (new SchemaValidator())->validate($data, $schema);
-            $this->fail('Validation did not expected to pass');
-        } catch (KeywordMismatch $e) {
-            $this->assertEquals('minItems', $e->keyword());
-        }
+        $e = $this->expectMismatch(KeywordMismatch::class, fn () => (new SchemaValidator())->validate($data, $schema));
+        $this->assertEquals('minItems', $e->keyword());
     }
 }

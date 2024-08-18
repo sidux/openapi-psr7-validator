@@ -75,11 +75,7 @@ SPEC;
 
         $schema = $this->loadRawSchema($spec);
 
-        try {
-            (new SchemaValidator())->validate($number, $schema);
-            $this->fail('Validation should not pass');
-        } catch (KeywordMismatch $e) {
-            $this->assertEquals('multipleOf', $e->keyword());
-        }
+        $e = $this->expectMismatch(KeywordMismatch::class, fn () => (new SchemaValidator())->validate($number, $schema));
+        $this->assertEquals('multipleOf', $e->keyword());
     }
 }

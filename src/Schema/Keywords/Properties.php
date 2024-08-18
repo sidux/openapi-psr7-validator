@@ -75,14 +75,20 @@ class Properties extends BaseKeyword
 
         $schemaValidator = new SchemaValidator($this->validationDataType);
 
+        $errors = [];
         // Validate against "properties"
         foreach ($properties as $propName => $propSchema) {
             if (! array_key_exists($propName, $data)) {
                 continue;
             }
-
-            $schemaValidator->validate($data[$propName], $propSchema, $this->dataBreadCrumb->addCrumb($propName));
+            try {
+                $schemaValidator->validate($data[$propName], $propSchema, $this->dataBreadCrumb->addCrumb($propName));
+            } catch (SchemaMismatch $e) {
+                $errors[] = $e;
+            }
         }
+
+
 
         // Validate the rest against "additionalProperties"
         if (! ($additionalProperties instanceof CebeSchema)) {
@@ -90,13 +96,16 @@ class Properties extends BaseKeyword
             $unexpectedProps = array_diff(array_keys($data), array_keys($properties));
 
             if ($unexpectedProps && $additionalProperties === false) {
-                throw KeywordMismatch::fromKeyword(
+                $errors[] = KeywordMismatch::fromKeyword(
                     'additionalProperties',
                     $data,
                     sprintf('Data has additional properties (%s) which are not allowed', implode(',', $unexpectedProps))
                 );
             }
 
+            if (!empty($errors)) {
+                throw new SchemaMismatch(childMismatches: $errors, dataBreadCrumb: $this->dataBreadCrumb, data: $data);
+            }
             return;
         }
 
@@ -106,11 +115,19 @@ class Properties extends BaseKeyword
             }
 
             // if not covered by "properties"
-            $schemaValidator->validate(
-                $data[$propName],
-                $additionalProperties,
-                $this->dataBreadCrumb->addCrumb($propName)
-            );
+            try {
+                $schemaValidator->validate(
+                    $data[$propName],
+                    $additionalProperties,
+                    $this->dataBreadCrumb->addCrumb($propName)
+                );
+            } catch (SchemaMismatch $e) {
+                $errors[] = $e;
+            }
+
+            if (!empty($errors)) {
+                throw new SchemaMismatch(childMismatches: $errors, dataBreadCrumb: $this->dataBreadCrumb, data: $data);
+            }
         }
     }
 }

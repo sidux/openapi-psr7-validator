@@ -50,8 +50,6 @@ SPEC;
         $schema = $this->loadRawSchema($spec);
         $data   = ['name' => 'Dima', 'age' => 10.5];
 
-        $this->expectException(TypeMismatch::class);
-
-        (new SchemaValidator())->validate($data, $schema);
+        $this->expectMismatch(TypeMismatch::class, fn () => (new SchemaValidator())->validate($data, $schema));
     }
 }

@@ -57,8 +57,7 @@ SPEC;
         $schema = $this->loadRawSchema($spec);
         $data   = [1, 2];
 
-        $this->expectException(TypeMismatch::class);
-        (new SchemaValidator())->validate($data, $schema);
+        $this->expectMismatch(TypeMismatch::class, fn () => (new SchemaValidator())->validate($data, $schema));
     }
 
     public function testItValidatesItemsNestedRed(): void
@@ -76,8 +75,6 @@ SPEC;
         $schema = $this->loadRawSchema($spec);
         $data   = [['stringA', 'stringB'], [12, 13]];
 
-        $this->expectException(TypeMismatch::class);
-
-        (new SchemaValidator())->validate($data, $schema);
+        $this->expectMismatch(TypeMismatch::class, fn () => (new SchemaValidator())->validate($data, $schema));
     }
 }

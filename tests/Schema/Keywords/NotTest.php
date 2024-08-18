@@ -42,11 +42,7 @@ SPEC;
         $schema = $this->loadRawSchema($spec);
         $data   = ['name' => 'Dima', 'age' => 10];
 
-        try {
-            (new SchemaValidator())->validate($data, $schema);
-            $this->fail('Validation did not expected to pass');
-        } catch (KeywordMismatch $e) {
-            $this->assertEquals('not', $e->keyword());
-        }
+        $e = $this->expectMismatch(KeywordMismatch::class, fn () => (new SchemaValidator())->validate($data, $schema));
+        $this->assertEquals('not', $e->keyword());
     }
 }

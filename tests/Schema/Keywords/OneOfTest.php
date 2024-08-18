@@ -52,12 +52,8 @@ SPEC;
         $schema = $this->loadRawSchema($spec);
         $data   = ['name' => 'Dima', 'age' => 10];
 
-        try {
-            (new SchemaValidator())->validate($data, $schema);
-            $this->fail('Validation did not expected to pass');
-        } catch (KeywordMismatch $e) {
-            $this->assertEquals('oneOf', $e->keyword());
-        }
+        $e = $this->expectMismatch(KeywordMismatch::class, fn () => (new SchemaValidator())->validate($data, $schema));
+        $this->assertEquals('oneOf', $e->keyword());
     }
 
     public function testItValidatesOneOfNoMatchesRed(): void
@@ -78,11 +74,7 @@ SPEC;
         $schema = $this->loadRawSchema($spec);
         $data   = ['name' => 500, 'age' => 'young'];
 
-        try {
-            (new SchemaValidator())->validate($data, $schema);
-            $this->fail('Validation did not expected to pass');
-        } catch (KeywordMismatch $e) {
-            $this->assertEquals('oneOf', $e->keyword());
-        }
+        $e = $this->expectMismatch(KeywordMismatch::class, fn () => (new SchemaValidator())->validate($data, $schema));
+        $this->assertEquals('oneOf', $e->keyword());
     }
 }

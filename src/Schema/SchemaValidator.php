@@ -55,80 +55,150 @@ final class SchemaValidator implements Validator
     {
         $breadCrumb = $breadCrumb ?? new BreadCrumb();
 
+        $errors = [];
         try {
-            // These keywords are not part of the JSON Schema at all (new to OAS)
             (new Nullable($schema))->validate($data, $schema->nullable ?? true);
+        } catch (SchemaMismatch $e) {
+            $errors[] = $e;
+        }
 
-            // We don't want to validate any more if the value is a valid Null
-            if ($data === null) {
-                return;
+        // We don't want to validate any more if the value is a valid Null
+        if ($data === null) {
+            if (count($errors) > 0) {
+                throw new SchemaMismatch(childMismatches: $errors);
             }
+            return;
+        }
 
+
+        try {
             // The following properties are taken from the JSON Schema definition but their definitions were adjusted to the OpenAPI Specification.
             if (isset($schema->type)) {
                 (new Type($schema))->validate($data, $schema->type, $schema->format);
             }
+        } catch (SchemaMismatch $e) {
+            $errors[] = $e;
+        }
 
+        try {
             // This keywords come directly from JSON Schema Validation, they are the same as in JSON schema
             // https://tools.ietf.org/html/draft-wright-json-schema-validation-00#section-5
             if (isset($schema->multipleOf)) {
                 (new MultipleOf($schema))->validate($data, $schema->multipleOf);
             }
+        } catch (SchemaMismatch $e) {
+            $errors[] = $e;
+        }
 
+        try {
             if (isset($schema->maximum)) {
                 $exclusiveMaximum = (bool) ($schema->exclusiveMaximum ?? false);
                 (new Maximum($schema))->validate($data, $schema->maximum, $exclusiveMaximum);
             }
+        } catch (SchemaMismatch $e) {
+            $errors[] = $e;
+        }
 
+        try {
             if (isset($schema->minimum)) {
                 $exclusiveMinimum = (bool) ($schema->exclusiveMinimum ?? false);
                 (new Minimum($schema))->validate($data, $schema->minimum, $exclusiveMinimum);
             }
+        } catch (SchemaMismatch $e) {
+            $errors[] = $e;
+        }
 
+
+        try {
             if (isset($schema->maxLength)) {
                 (new MaxLength($schema))->validate($data, $schema->maxLength);
             }
+        } catch (SchemaMismatch $e) {
+            $errors[] = $e;
+        }
 
+        try {
             if (isset($schema->minLength)) {
                 (new MinLength($schema))->validate($data, $schema->minLength);
             }
+        } catch (SchemaMismatch $e) {
+            $errors[] = $e;
+        }
 
+        try {
             if (isset($schema->pattern)) {
                 (new Pattern($schema))->validate($data, $schema->pattern);
             }
+        } catch (SchemaMismatch $e) {
+            $errors[] = $e;
+        }
 
+
+        try {
             if (isset($schema->maxItems)) {
                 (new MaxItems($schema))->validate($data, $schema->maxItems);
             }
+        } catch (SchemaMismatch $e) {
+            $errors[] = $e;
+        }
 
+        try {
             if (isset($schema->minItems)) {
                 (new MinItems($schema))->validate($data, $schema->minItems);
             }
+        } catch (SchemaMismatch $e) {
+            $errors[] = $e;
+        }
 
+        try {
             if (isset($schema->uniqueItems)) {
                 (new UniqueItems($schema))->validate($data, $schema->uniqueItems);
             }
+        } catch (SchemaMismatch $e) {
+            $errors[] = $e;
+        }
 
+        try {
             if (isset($schema->maxProperties)) {
                 (new MaxProperties($schema))->validate($data, $schema->maxProperties);
             }
+        } catch (SchemaMismatch $e) {
+            $errors[] = $e;
+        }
 
+        try {
             if (isset($schema->minProperties)) {
                 (new MinProperties($schema))->validate($data, $schema->minProperties);
             }
+        } catch (SchemaMismatch $e) {
+            $errors[] = $e;
+        }
 
+        try {
             if (isset($schema->required)) {
                 (new Required($schema, $this->validationStrategy, $breadCrumb))->validate($data, $schema->required);
             }
+        } catch (SchemaMismatch $e) {
+            $errors[] = $e;
+        }
 
+        try {
             if (isset($schema->enum)) {
                 (new Enum($schema))->validate($data, $schema->enum);
             }
+        } catch (SchemaMismatch $e) {
+            $errors[] = $e;
+        }
 
+        try {
             if (isset($schema->items)) {
                 (new Items($schema, $this->validationStrategy, $breadCrumb))->validate($data, $schema->items);
             }
+        } catch (SchemaMismatch $e) {
+            $errors[] = $e;
+        }
 
+        try {
             if (
                 $schema->type === CebeType::OBJECT
                 || (isset($schema->properties) && is_array($data) && ArrayHelper::isAssoc($data))
@@ -138,31 +208,92 @@ final class SchemaValidator implements Validator
                     (new Properties($schema, $this->validationStrategy, $breadCrumb))->validate(
                         $data,
                         $schema->properties,
-                        $additionalProperties
+                        $additionalProperties,
                     );
                 }
             }
+        } catch (SchemaMismatch $e) {
+            $errors[] = $e;
+        }
 
+        try {
             if (isset($schema->allOf) && count($schema->allOf)) {
                 (new AllOf($schema, $this->validationStrategy, $breadCrumb))->validate($data, $schema->allOf);
             }
+        } catch (SchemaMismatch $e) {
+            $errors[] = $e;
+        }
 
+        try {
             if (isset($schema->oneOf) && count($schema->oneOf)) {
                 (new OneOf($schema, $this->validationStrategy, $breadCrumb))->validate($data, $schema->oneOf);
             }
+        } catch (SchemaMismatch $e) {
+            $errors[] = $e;
+        }
 
+        try {
             if (isset($schema->anyOf) && count($schema->anyOf)) {
                 (new AnyOf($schema, $this->validationStrategy, $breadCrumb))->validate($data, $schema->anyOf);
             }
+        } catch (SchemaMismatch $e) {
+            $errors[] = $e;
+        }
 
+        try {
             if (isset($schema->not)) {
                 (new Not($schema, $this->validationStrategy, $breadCrumb))->validate($data, $schema->not);
             }
-            //   ✓  ok, all checks are done
         } catch (SchemaMismatch $e) {
-            $e->hydrateDataBreadCrumb($breadCrumb);
-
-            throw $e;
+            $errors[] = $e;
         }
+        //   ✓  ok, all checks are done
+
+        if (count($errors) > 0) {
+            $allMismatches = [];
+            foreach ($errors as $error) {
+                $allMismatches[] = $this->deepExtractErrors($error);
+            }
+            throw new SchemaMismatch(
+                childMismatches: $this->uniquePathMistmatches(array_merge(...$allMismatches)),
+                dataBreadCrumb: $breadCrumb,
+                data: $data,
+            );
+        }
+    }
+
+
+    private function deepExtractErrors(SchemaMismatch $e): array
+    {
+        $errors = [[$e]];
+        foreach ($e->getChildMistmatches() as $child) {
+            if ($child instanceof SchemaMismatch) {
+                $errors[] = $this->deepExtractErrors($child);
+            }
+        }
+
+        return array_merge(...$errors);
+    }
+
+    /**
+     * @param  SchemaMismatch[]  $mismatches
+     * @return SchemaMismatch[]
+     */
+    public function uniquePathMistmatches(array $mismatches): array
+    {
+        $unique = [];
+        foreach ($mismatches as $mismatch) {
+            if (!$mismatch->getMessage()) {
+                continue;
+            }
+//            $path = $mismatch->dataBreadCrumb()?->getFullPath();
+//            if (!$path) {
+//                continue;
+//            }
+            $unique[] = $mismatch;
+        }
+
+        return $unique;
+
     }
 }

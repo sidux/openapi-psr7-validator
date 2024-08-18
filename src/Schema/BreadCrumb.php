@@ -61,4 +61,9 @@ class BreadCrumb
 
         return $keys;
     }
+
+    public function getFullPath(): string
+    {
+        return implode('.', $this->buildChain());
+    }
 }

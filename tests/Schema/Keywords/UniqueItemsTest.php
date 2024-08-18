@@ -223,11 +223,7 @@ SPEC
     {
         $schema = $this->loadRawSchema($spec);
 
-        try {
-            (new SchemaValidator())->validate($data, $schema);
-            $this->fail('Exception expected');
-        } catch (KeywordMismatch $e) {
-            $this->assertEquals('uniqueItems', $e->keyword());
-        }
+        $e = $this->expectMismatch(KeywordMismatch::class, fn () => (new SchemaValidator())->validate($data, $schema));
+        $this->assertEquals('uniqueItems', $e->keyword());
     }
 }

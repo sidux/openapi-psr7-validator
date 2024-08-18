@@ -36,11 +36,7 @@ SPEC;
         $schema = $this->loadRawSchema($spec);
         $data   = 'abcde12345';
 
-        try {
-            (new SchemaValidator())->validate($data, $schema);
-            $this->fail('Validation did not expected to pass');
-        } catch (KeywordMismatch $e) {
-            $this->assertEquals('minLength', $e->keyword());
-        }
+        $e = $this->expectMismatch(KeywordMismatch::class, fn () => (new SchemaValidator())->validate($data, $schema));
+        $this->assertEquals('minLength', $e->keyword());
     }
 }

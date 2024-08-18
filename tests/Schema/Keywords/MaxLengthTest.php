@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace League\OpenAPIValidation\Tests\Schema\Keywords;
 
 use League\OpenAPIValidation\Schema\Exception\KeywordMismatch;
+use League\OpenAPIValidation\Schema\Exception\SchemaMismatch;
 use League\OpenAPIValidation\Schema\SchemaValidator;
 use League\OpenAPIValidation\Tests\Schema\SchemaValidatorTest;
 
@@ -36,11 +37,11 @@ SPEC;
         $schema = $this->loadRawSchema($spec);
         $data   = 'abcde12345';
 
-        try {
-            (new SchemaValidator())->validate($data, $schema);
-            $this->fail('Validation did not expected to pass');
-        } catch (KeywordMismatch $e) {
-            $this->assertEquals('maxLength', $e->keyword());
-        }
+
+        $e = $this->expectMismatch(
+            KeywordMismatch::class,
+            fn() => (new SchemaValidator())->validate($data, $schema)
+        );
+        $this->assertEquals('maxLength', $e->keyword());
     }
 }

@@ -62,8 +62,7 @@ SPEC;
         $schema = $this->loadRawSchema($spec);
         $data   = ['name' => 'Dima', 'age' => 'young'];
 
-        $this->expectException(TypeMismatch::class);
-        (new SchemaValidator())->validate($data, $schema);
+        $this->expectMismatch(TypeMismatch::class, fn () => (new SchemaValidator())->validate($data, $schema));
     }
 
     public function testItValidatesAdditionalPropertiesRed(): void
@@ -81,8 +80,7 @@ SPEC;
         $schema = $this->loadRawSchema($spec);
         $data   = ['name' => 'Dima', 'age' => 'young'];
 
-        $this->expectException(TypeMismatch::class);
-        (new SchemaValidator())->validate($data, $schema);
+        $this->expectMismatch(TypeMismatch::class, fn () => (new SchemaValidator())->validate($data, $schema));
     }
 
     public function testItValidatesAdditionalPropertiesDisallowedRed(): void
@@ -100,8 +98,7 @@ SPEC;
         $schema = $this->loadRawSchema($spec);
         $data   = ['data' => [], 'excessProperty' => 'test'];
 
-        $this->expectException(KeywordMismatch::class);
-        (new SchemaValidator())->validate($data, $schema);
+        $this->expectMismatch(KeywordMismatch::class, fn () => (new SchemaValidator())->validate($data, $schema));
     }
 
     public function testItInfersObjectTypeGreen(): void
@@ -117,7 +114,6 @@ SPEC;
         $schema = $this->loadRawSchema($spec);
         $data   = ['date' => 'not-a-date'];
 
-        $this->expectException(KeywordMismatch::class);
-        (new SchemaValidator())->validate($data, $schema);
+        $this->expectMismatch(KeywordMismatch::class, fn () => (new SchemaValidator())->validate($data, $schema));
     }
 }

@@ -41,12 +41,8 @@ SPEC;
         $schema = $this->loadRawSchema($spec);
         $data   = 100;
 
-        try {
-            (new SchemaValidator())->validate($data, $schema);
-            $this->fail('Validation did not expected to pass');
-        } catch (KeywordMismatch $e) {
-            $this->assertEquals('maximum', $e->keyword());
-            $this->assertEquals('Keyword validation failed: Value 100 must be less than 100', $e->getMessage());
-        }
+        $e = $this->expectMismatch(KeywordMismatch::class, fn () => (new SchemaValidator())->validate($data, $schema));
+        $this->assertEquals('maximum', $e->keyword());
+        $this->assertEquals('Keyword validation failed: Value 100 must be less than 100', $e->getMessage());
     }
 }

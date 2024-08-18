@@ -23,7 +23,7 @@ final class AllOf extends BaseKeyword
     {
         parent::__construct($parentSchema);
         $this->validationDataType = $type;
-        $this->dataBreadCrumb     = $breadCrumb;
+        $this->dataBreadCrumb = $breadCrumb;
     }
 
     /**
@@ -36,8 +36,8 @@ final class AllOf extends BaseKeyword
      * validates successfully against all schemas defined by this keyword's
      * value.
      *
-     * @param mixed        $data
-     * @param CebeSchema[] $allOf
+     * @param  mixed  $data
+     * @param  CebeSchema[]  $allOf
      *
      * @throws SchemaMismatch
      */
@@ -52,8 +52,17 @@ final class AllOf extends BaseKeyword
 
         // Validate against all schemas
         $schemaValidator = new SchemaValidator($this->validationDataType);
+        $errors = [];
         foreach ($allOf as $schema) {
-            $schemaValidator->validate($data, $schema, $this->dataBreadCrumb);
+            try {
+                $schemaValidator->validate($data, $schema, $this->dataBreadCrumb);
+            } catch (SchemaMismatch $e) {
+                $errors[] = $e;
+            }
+        }
+
+        if (!empty($errors)) {
+            throw new SchemaMismatch(childMismatches: $errors, dataBreadCrumb: $this->dataBreadCrumb, data: $data);
         }
     }
 }
